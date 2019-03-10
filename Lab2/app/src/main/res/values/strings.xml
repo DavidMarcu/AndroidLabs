@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">My Application</string>
     <string name="product_image_description">Product image</string>
+    <string name="home_settings">Home</string>
+    <string name="about_settings">About</string>
+    <string name="options_settings">Settings</string>
 </resources>
