@@ -1,19 +1,25 @@
 package com.fiiandroid.lab2;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +39,6 @@ public class MainActivity extends ListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         if (savedInstanceState == null) {
             Product product1 = new Product("Bananas", 2.49, "Some bananas", R.drawable.bananas);
             Product product2 = new Product("Apples", 1.99, "Some apples", R.drawable.apples);
@@ -65,7 +70,7 @@ public class MainActivity extends ListActivity {
             listItem.put("product", product);
             theList.add(listItem);
         }
-        if(displayedProduct != null)
+        if (displayedProduct != null)
             setProductDetailsTextView();
     }
 
@@ -115,6 +120,18 @@ public class MainActivity extends ListActivity {
         setProductDetailsTextView();
     }
 
+    private void setProductDetailsTextView() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inMutable = true;
+        Bitmap productImage = BitmapFactory.decodeResource(getResources(), displayedProduct.getImageResource(), options);
+
+        TextView productDetails = findViewById(R.id.product_details);
+        Drawable drawableProduct = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(productImage, 512, 500, false));
+        productDetails.setCompoundDrawablesRelativeWithIntrinsicBounds(drawableProduct, null, null, null);
+        productDetails.setCompoundDrawablePadding(15);
+        productDetails.setText(String.format(Locale.getDefault(), "%s\n%.2f$\n%s", displayedProduct.getName(), displayedProduct.getPrice(), displayedProduct.getDesciption()));
+    }
+
     @Override
     public void onSaveInstanceState(Bundle savedInstance) {
         savedInstance.putParcelableArrayList("product_list", products);
@@ -130,15 +147,60 @@ public class MainActivity extends ListActivity {
         return true;
     }
 
-    private void setProductDetailsTextView() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inMutable = true;
-        Bitmap productImage = BitmapFactory.decodeResource(getResources(), displayedProduct.getImageResource(), options);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.about:
+                showAbout();
+                return true;
+            case R.id.new_product:
+                showNewProduct();
+                return true;
+            case R.id.settings:
+                showSettings();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
-        TextView productDetails = findViewById(R.id.product_details);
-        Drawable drawableProduct = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(productImage, 512, 500, false));
-        productDetails.setCompoundDrawablesRelativeWithIntrinsicBounds(drawableProduct, null, null, null);
-        productDetails.setCompoundDrawablePadding(15);
-        productDetails.setText(String.format(Locale.getDefault(), "%s\n%.2f$\n%s", displayedProduct.getName(), displayedProduct.getPrice(), displayedProduct.getDesciption()));
+    public void showAbout(){
+        final AlertDialog alertDialog = new AlertDialog.Builder(this).
+                 setMessage(R.string.about_message)
+                .setTitle("About")
+                .create();
+        alertDialog.show();
+    }
+
+    public void showSettings(){
+        Intent intent = new Intent();
+        intent.setClassName(this, SettingsActivity.class.getName());
+        startActivity(intent);
+    }
+
+    public void showNewProduct(){
+        Intent intent = new Intent();
+        intent.setClassName(this, NewProductActivity.class.getName());
+        startActivityForResult(intent, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 1){
+            if(resultCode == RESULT_OK){
+                String newProductName = data.getStringExtra("product_name");
+                double newProductPrice = data.getDoubleExtra("product_price", 0.00);
+                String newProductDescription = data.getStringExtra("product_description");
+                Product newProduct = new Product(newProductName, newProductPrice, newProductDescription, R.drawable.missing_image);
+                products.add(newProduct);
+
+                Map<String, Object> listItem = new HashMap<>();
+                listItem.put("name", newProduct.getName());
+                listItem.put("price", newProduct.getPrice() + "$");
+                listItem.put("product", newProduct);
+                theList.add(listItem);
+            }
+        }
     }
 }
