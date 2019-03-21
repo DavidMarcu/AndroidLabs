@@ -2,14 +2,14 @@ package com.fiiandroid.lab2;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,7 +19,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends ListActivity {
 
@@ -34,10 +34,13 @@ public class MainActivity extends ListActivity {
     private Product displayedProduct;
     private List<Map<String, Object>> theList;
     private ListAdapter listAdapter;
+    private SharedPreferences preferences;
+    private boolean isDark;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SettingsHelper.onActivityCreateSetTheme(this);
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             Product product1 = new Product("Bananas", 2.49, "Some bananas", R.drawable.bananas);
@@ -72,6 +75,9 @@ public class MainActivity extends ListActivity {
         }
         if (displayedProduct != null)
             setProductDetailsTextView();
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        isDark = preferences.getBoolean("theme", false);
     }
 
     @Override
@@ -96,6 +102,8 @@ public class MainActivity extends ListActivity {
     protected void onResume() {
         super.onResume();
         Log.d("ACTIVITY_LIFECYCLE", "Activity resumed!");
+        if(isDark != preferences.getBoolean("theme", false))
+            recreate();
     }
 
     @Override
