@@ -3,7 +3,9 @@ package com.fiiandroid.lab2;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Product implements Parcelable {
+import java.io.Serializable;
+
+public class Product implements Parcelable, Serializable {
     private String name;
     private double price;
     private String desciption;

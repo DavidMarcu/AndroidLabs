@@ -20,6 +20,13 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,23 +50,10 @@ public class MainActivity extends ListActivity {
         SettingsHelper.onActivityCreateSetTheme(this);
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
-            Product product1 = new Product("Bananas", 2.49, "Some bananas", R.drawable.bananas);
-            Product product2 = new Product("Apples", 1.99, "Some apples", R.drawable.apples);
-            Product product3 = new Product("Tomatoes", 4.49, "Some tomatoes", R.drawable.tomatoes);
-            Product product4 = new Product("Pears", 5.99, "Some pears", R.drawable.pears);
-            Product product5 = new Product("Pineapples", 9.99, "Some pineapples", R.drawable.pineapples);
-            Product product6 = new Product("Bananas", 2.49, "Some bananas", R.drawable.bananas);
-            Product product7 = new Product("Apples", 1.99, "Some apples", R.drawable.apples);
-            Product product8 = new Product("Tomatoes", 4.49, "Some tomatoes", R.drawable.tomatoes);
-            Product product9 = new Product("Pears", 5.99, "Some pears", R.drawable.pears);
-            Product product10 = new Product("Pineapples", 9.99, "Some pineapples", R.drawable.pineapples);
-            Product product11 = new Product("Bananas", 2.49, "Some bananas", R.drawable.bananas);
-            Product product12 = new Product("Apples", 1.99, "Some apples", R.drawable.apples);
-            Product product13 = new Product("Tomatoes", 4.49, "Some tomatoes", R.drawable.tomatoes);
-            Product product14 = new Product("Pears", 5.99, "Some pears", R.drawable.pears);
-            Product product15 = new Product("Pineapples", 9.99, "Some pineapples", R.drawable.pineapples);
-            products = new ArrayList<>(Arrays.asList(product1, product2, product3, product4, product5, product6, product7, product8, product9, product10, product11
-                    , product12, product13, product14, product15));
+            products = loadProductList();
+            if(products == null){
+                products = new ArrayList<>();
+            }
         } else {
             products = savedInstanceState.getParcelableArrayList("product_list");
             displayedProduct = (Product) savedInstanceState.get("product_details");
@@ -164,11 +158,36 @@ public class MainActivity extends ListActivity {
             case R.id.new_product:
                 showNewProduct();
                 return true;
+            case R.id.save_product_list:
+                saveProductList();
+                return true;
             case R.id.settings:
                 showSettings();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private ArrayList<Product> loadProductList(){
+        File file = new File(this.getFilesDir(), "listfile");
+        try(ObjectInputStream listStream = new ObjectInputStream(new FileInputStream(file))){
+            return(ArrayList<Product>)listStream.readObject();
+        }
+        catch (IOException | ClassNotFoundException exception){
+            Log.e("IOException", exception.toString());
+        }
+        return null;
+    }
+
+    private void saveProductList() {
+        File file = new File(this.getFilesDir(), "listfile");
+        try(ObjectOutputStream listStream = new ObjectOutputStream(new FileOutputStream(file))){
+            listStream.writeObject(products);
+
+        }
+        catch (IOException exception){
+            Log.e("IOException", exception.toString());
         }
     }
 
@@ -200,7 +219,8 @@ public class MainActivity extends ListActivity {
                 String newProductName = data.getStringExtra("product_name");
                 double newProductPrice = data.getDoubleExtra("product_price", 0.00);
                 String newProductDescription = data.getStringExtra("product_description");
-                Product newProduct = new Product(newProductName, newProductPrice, newProductDescription, R.drawable.missing_image);
+                int photoId = data.getIntExtra("product_image", R.drawable.missing_image);
+                Product newProduct = new Product(newProductName, newProductPrice, newProductDescription, photoId);
                 products.add(newProduct);
 
                 Map<String, Object> listItem = new HashMap<>();
