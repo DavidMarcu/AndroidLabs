@@ -52,7 +52,13 @@ public class Product implements Parcelable, Serializable {
         return desciption;
     }
 
-
+    @Override
+    public String toString() {
+        return "Product{" +
+                "Name: " + name +
+                " Price: " + price +
+                " Description: " + desciption + " }\n";
+    }
 
     @Override
     public int describeContents() {

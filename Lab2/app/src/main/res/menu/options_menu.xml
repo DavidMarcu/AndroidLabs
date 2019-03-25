@@ -7,6 +7,8 @@
           android:title="@string/new_product_settings"/>
     <item android:id="@+id/save_product_list"
           android:title="@string/options_save_list"/>
+    <item android:id="@+id/save_product_list_external"
+          android:title="@string/options_save_list_external"/>
     <item android:id="@+id/settings"
           android:icon="@drawable/toolbar_customize"
           android:title="@string/options_settings"/>

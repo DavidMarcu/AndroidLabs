@@ -84,4 +84,6 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="options_save_list">Save list</string>
+    <string name="options_save_list_external">Save list sdcard</string>
+    <string name="error_request_write_external_storage">The user needs to accept the request for the app to write in the external, otherwise the action cannot be completed</string>
 </resources>

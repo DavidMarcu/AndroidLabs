@@ -1,15 +1,20 @@
 package com.fiiandroid.lab2;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,17 +28,15 @@ import android.widget.TextView;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 public class MainActivity extends ListActivity {
 
@@ -43,6 +46,7 @@ public class MainActivity extends ListActivity {
     private ListAdapter listAdapter;
     private SharedPreferences preferences;
     private boolean isDark;
+    public final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +55,7 @@ public class MainActivity extends ListActivity {
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             products = loadProductList();
-            if(products == null){
+            if (products == null) {
                 products = new ArrayList<>();
             }
         } else {
@@ -96,7 +100,7 @@ public class MainActivity extends ListActivity {
     protected void onResume() {
         super.onResume();
         Log.d("ACTIVITY_LIFECYCLE", "Activity resumed!");
-        if(isDark != preferences.getBoolean("theme", false))
+        if (isDark != preferences.getBoolean("theme", false))
             recreate();
     }
 
@@ -161,6 +165,9 @@ public class MainActivity extends ListActivity {
             case R.id.save_product_list:
                 saveProductList();
                 return true;
+            case R.id.save_product_list_external:
+                requestSaveProductListExternal();
+                return true;
             case R.id.settings:
                 showSettings();
                 return true;
@@ -169,12 +176,11 @@ public class MainActivity extends ListActivity {
         }
     }
 
-    private ArrayList<Product> loadProductList(){
+    private ArrayList<Product> loadProductList() {
         File file = new File(this.getFilesDir(), "listfile");
-        try(ObjectInputStream listStream = new ObjectInputStream(new FileInputStream(file))){
-            return(ArrayList<Product>)listStream.readObject();
-        }
-        catch (IOException | ClassNotFoundException exception){
+        try (ObjectInputStream listStream = new ObjectInputStream(new FileInputStream(file))) {
+            return (ArrayList<Product>) listStream.readObject();
+        } catch (IOException | ClassNotFoundException exception) {
             Log.e("IOException", exception.toString());
         }
         return null;
@@ -182,30 +188,77 @@ public class MainActivity extends ListActivity {
 
     private void saveProductList() {
         File file = new File(this.getFilesDir(), "listfile");
-        try(ObjectOutputStream listStream = new ObjectOutputStream(new FileOutputStream(file))){
+        try (ObjectOutputStream listStream = new ObjectOutputStream(new FileOutputStream(file))) {
             listStream.writeObject(products);
 
+        } catch (IOException exception) {
+            Log.e("IOException", exception.toString());
+        }
+    }
+
+    private void requestSaveProductListExternal() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+
+            }
+        } else {
+            saveProductListExternal();
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    saveProductListExternal();
+                } else {
+                    Log.e("REQ_DENIED", "Write to external storage request denied");
+                    final AlertDialog alertDialog = new AlertDialog.Builder(this).
+                            setMessage(R.string.error_request_write_external_storage)
+                            .setTitle("Error Writing List")
+                            .create();
+                    alertDialog.show();
+                }
+            }
+        }
+
+    }
+
+    private void saveProductListExternal() {
+        try(OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/Product.txt"))){
+            for(Product product : products){
+                osw.write(product.toString());
+            }
         }
         catch (IOException exception){
             Log.e("IOException", exception.toString());
         }
     }
 
-    public void showAbout(){
+    public void showAbout() {
         final AlertDialog alertDialog = new AlertDialog.Builder(this).
-                 setMessage(R.string.about_message)
+                setMessage(R.string.about_message)
                 .setTitle("About")
                 .create();
         alertDialog.show();
     }
 
-    public void showSettings(){
+    public void showSettings() {
         Intent intent = new Intent();
         intent.setClassName(this, SettingsActivity.class.getName());
         startActivity(intent);
     }
 
-    public void showNewProduct(){
+    public void showNewProduct() {
         Intent intent = new Intent();
         intent.setClassName(this, NewProductActivity.class.getName());
         startActivityForResult(intent, 1);
@@ -214,8 +267,8 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 1){
-            if(resultCode == RESULT_OK){
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
                 String newProductName = data.getStringExtra("product_name");
                 double newProductPrice = data.getDoubleExtra("product_price", 0.00);
                 String newProductDescription = data.getStringExtra("product_description");
