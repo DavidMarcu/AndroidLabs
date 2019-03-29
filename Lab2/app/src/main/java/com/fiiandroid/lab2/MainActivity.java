@@ -168,12 +168,28 @@ public class MainActivity extends ListActivity {
             case R.id.save_product_list_external:
                 requestSaveProductListExternal();
                 return true;
+            case R.id.sensors_info:
+                showSensorInfo();
+                return true;
+            case R.id.show_location:
+                showLocation();
+                return true;
             case R.id.settings:
                 showSettings();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void showLocation() {
+        Intent intent = new Intent(this, LocationActivity.class);
+        startActivity(intent);
+    }
+
+    private void showSensorInfo() {
+        Intent intent = new Intent(this, SensorsActivity.class);
+        startActivity(intent);
     }
 
     private ArrayList<Product> loadProductList() {
