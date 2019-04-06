@@ -78,7 +78,7 @@ public class LocationActivity extends Activity {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     try {
-                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, new MyLocationListener());
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10, 1, new MyLocationListener());
                     } catch (SecurityException exception) {
                         Log.e("REQ_DENIED", "GPS service request denied");
                         final AlertDialog alertDialog = new AlertDialog.Builder(this).
