@@ -6,7 +6,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -15,7 +14,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +29,6 @@ public class SensorsActivity extends ListActivity implements SensorEventListener
         for (int i = 0; i < theList.size(); i++) {
             if(event.sensor.equals(theList.get(i).get("sensor"))) {
                 theList.get(i).put("sensor_value", Arrays.toString(event.values));
-//                Log.d("SENSOR", theList.get(i).get("sensor").toString() + (theList.get(i).get("sensor_value")!=null ? theList.get(i).get("sensor_value") : " ------- nil"));
             }
         }
 
@@ -47,7 +44,7 @@ public class SensorsActivity extends ListActivity implements SensorEventListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensors);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        sensors = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
+        sensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
         theList = new ArrayList<>();
 
         for(Sensor sensor : sensors){
@@ -56,9 +53,6 @@ public class SensorsActivity extends ListActivity implements SensorEventListener
                 listItem.put("name", sensor.getName());
                 listItem.put("sensor", sensor);
                 List<Float> floats = new ArrayList<>();
-//                for (float f : event.values)
-//                    floats.add(f);
-//                listItem.put("sensor_values", floats.toString());
                 theList.add(listItem);
             }
             ListAdapter listAdapter;
@@ -67,8 +61,6 @@ public class SensorsActivity extends ListActivity implements SensorEventListener
 
             listAdapter = new SimpleAdapter(this, theList, R.layout.item_layout, from, to);
             setListAdapter(listAdapter);
-//        Sensor maxSensorByPower = Collections.max(sensors, (s1, s2) -> Float.compare(s1.getPower(), s2.getPower()));
-//        Log.d("SENSOR", maxSensorByPower.toString());
     }
 
     @Override

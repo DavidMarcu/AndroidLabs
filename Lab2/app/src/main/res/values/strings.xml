@@ -90,4 +90,6 @@
     <string name="current_longitude">Current Longitude</string>
     <string name="sensors_info">Sensor Info</string>
     <string name="show_location">Show Location</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="take_photo_button">Capture</string>
 </resources>

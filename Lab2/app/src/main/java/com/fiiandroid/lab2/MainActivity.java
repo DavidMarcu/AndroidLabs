@@ -174,12 +174,20 @@ public class MainActivity extends ListActivity {
             case R.id.show_location:
                 showLocation();
                 return true;
+            case R.id.take_photo:
+                takePhoto();
+                return true;
             case R.id.settings:
                 showSettings();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void takePhoto() {
+        Intent intent = new Intent(this, CameraActivity.class);
+        startActivity(intent);
     }
 
     private void showLocation() {
@@ -232,7 +240,7 @@ public class MainActivity extends ListActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE: {
+            case MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     saveProductListExternal();
@@ -247,15 +255,12 @@ public class MainActivity extends ListActivity {
             }
         }
 
-    }
-
     private void saveProductListExternal() {
-        try(OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/Product.txt"))){
-            for(Product product : products){
+        try (OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(Environment.getExternalStorageDirectory().getPath() + "/Product.txt"))) {
+            for (Product product : products) {
                 osw.write(product.toString());
             }
-        }
-        catch (IOException exception){
+        } catch (IOException exception) {
             Log.e("IOException", exception.toString());
         }
     }
